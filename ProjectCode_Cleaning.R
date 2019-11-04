@@ -1,0 +1,15 @@
+install.packages("RCurl")
+install.packages("bitops")
+install.packages("jsonlite")
+install.packages("dplyr")
+install.packages("tidyverse")
+library("RCurl")
+library("bitops")
+library("jsonlite")
+library("dplyr")
+library("tidyverse")
+dataset <- read_json("fall2019-survey-M03.json")
+fall <- jsonlite::fromJSON("fall2019-survey-M03.json")
+View(fall)
+
+
