@@ -1,0 +1,30 @@
+Steps for using Version Control in R-Studio
+
+1. Goto File -> New Project -> Version Control
+2. Select Git
+3. In the Repository URL copy and paste below project url
+   https://github.com/Laxman-Kumar/IntroductionToDataScienceProject.git
+
+4. Project Directory Name should automatically filled wiht IntroductionToDataScienceProject
+5. Select the path where you want to clone the project from GIT
+6. Your project should open after the process finishes and you will see the starter code which was shared on microsoft teams.
+
+
+Steps for Pushing your code to the GIT
+1. Goto Tools -> Version Control -> Commit
+2. Select the file from the leftmost panel. You will only see files in which you had made changes so dont worry if you don't see all the files in the project.
+3. Write a commit message. Write the tasks which you had completed.
+4. Press the commit button.
+5. Goto Tools -> Version Control -> Push Branch
+6. If its your first push you will be asked with you github username and password.
+
+Steps for Pulling others code from the GIT
+1. Goto Tools -> Version Control -> Pull Branches
+
+
+Suggestion:
+1. Always run Pull branches before starting, because it will avoid conflicts.
+
+
+
+Let me know if you have difficulties in setting GIT or using GIt.
