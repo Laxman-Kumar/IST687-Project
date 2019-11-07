@@ -42,3 +42,17 @@ averageScorePlot <- ggplot(data=averageScoreByPartner)+
               geom_col(aes(PartnerCode,AverageScore))
   
 averageScorePlot
+
+
+#### Joey - finding where there are no matches in Flight.time.in.minutes
+
+#creating dataframe to isolate origin city, destination city, flight time
+flights <- fall %>%
+  group_by(Origin.City, Destination.City, Partner.Code)%>%
+  summarise(mean(Flight.time.in.minutes, na.rm=TRUE))
+View(flights)            
+
+#isolating NAs in flights dataframe
+flightsNA <- flights[flights$`mean(Flight.time.in.minutes, na.rm = TRUE)`== "NaN",]
+flightsNA
+#There are 11 flights without matching flight times, meaning they are the only case of these flights.
