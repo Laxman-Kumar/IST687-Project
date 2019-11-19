@@ -1,23 +1,36 @@
+install.packages("wordcloud", dependencies = TRUE)
+install.packages("SnowballC") # for text stemming
+install.packages("wordcloud") # word-cloud generator 
+install.packages("RColorBrewer") # color palettes
 
-library(sqldf)
+
+library(wordcloud)
+library(tm)
+library(NLP)
+library(SnowballC)
+library(RColorBrewer)
 
 
 
+textualReviews <- fall %>%
+  select(freeText) %>%
+  drop_na(freeText) 
 
+row.names(textualReviews) <- NULL
 
-df <- data.frame(table(fall$Partner.Code,fall$Destination.City,fall$Origin.City,fall$Likelihood.to.recommend))
+reviewsCorpus <- Corpus(VectorSource(textualReviews))
+reviewsCorpus <- tm_map(reviewsCorpus,content_transformer(tolower))
+reviewsCorpus <- tm_map(reviewsCorpus, removeNumbers)
+reviewsCorpus <- tm_map(reviewsCorpus, removePunctuation)
+reviewsCorpus <- tm_map(reviewsCorpus, removeWords,stopwords("English"))
+reviewsCorpus <- tm_map(reviewsCorpus, stemDocument)
 
-df <- df[df$Freq>0,]
-rownames(df) <- NULL
+reviewMatrix <- TermDocumentMatrix(reviewsCorpus)
 
-agency <- textDF %>%
-  pull(textDF$fall.Likelihood.to.recommend) %>%
-  group_by(textDF$fall.Partner.Code) %>%
-  mean(textDF$fall.Likelihood.to.recommend,na.rm = TRUE)
+tdmMatrix <- as.matrix(reviewMatrix)
+freq <- sort(rowSums(tdmMatrix),decreasing=TRUE)
+tdmDat <- data.frame(word = names(freq),freq=freq)
+rownames(tdmDat) <- NULL
 
-df2 <- data.frame(table(fall$Partner.Code,fall$Likelihood.to.recommend))
-
-colnames(textDF)[3] <- "point"
-colnames(textDF)[1] <- "agency"
-
+wordcloud(tdmDat$word,tdmDat$freq,rot.per=.15,min.freq=15,random.order = FALSE,random.color = TRUE,colors = brewer.pal(8, "Dark2"))
 
