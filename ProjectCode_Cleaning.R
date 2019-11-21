@@ -18,6 +18,8 @@ View(fall)
 ####### - Cleaning Data Starts here  - ######
 ####### - BY - Laxman Kumar, Bhavish Kumar and Vidushi Mishra - #######
 
+    #Field with NAs DepartureDelay, ArrivalDelay, FlightTimeinMin
+    
     ## DepartureDelay, ArrivalDelay, FlightTimesInMinutes(There are 33 rows with no combination of values)
 
     columnNames <- c("DestinationCity","OriginCity","AirlineStatus","Age","Gender","PriceSensitivity",
@@ -67,21 +69,37 @@ View(fall)
     remove(indexOfNA)
     remove(averageLikelihood)
     
+    #Code for filtering out the Na when flight cancelled is Yes and No
+    
+    df %>%
+      select(Origin.City,Destination.City,Flight.cancelled,Flight.time.in.minutes) %>%
+      filter(is.na(Flight.time.in.minutes) & Flight.cancelled=="No")
+    
     #Replacing NA in Flight time in minutes to mean of route of partner airline
     #Assuming flight cancelled is customer data
     averageFlightTime <- df %>%
       group_by(Origin.City, Destination.City, Partner.Code)%>%
       summarise(mean(Flight.time.in.minutes, na.rm=TRUE))
     
-    indexOfNAList <- which(is.na(df$Flight.time.in.minutes))
+  
+    indexOfNAList <- which(is.na(df$Flight.time.in.minutes) & df$Flight.cancelled=="No")
+    
     for(indexOfNA in indexOfNAList){
       df$Flight.time.in.minutes[indexOfNA] <-
         as.integer(averageFlightTime[averageFlightTime$Origin.City==df[indexOfNA,2] & 
                                        averageFlightTime$Destination.City==df[indexOfNA,1] & 
                                        averageFlightTime$Partner.Code==df[indexOfNA,"Partner.Code"],4])
-      
     }
   
+    indexOfNAList <- which(is.na(df$Flight.time.in.minutes) & df$Flight.cancelled=="Yes")
+    for(indexOfNA in indexOfNAList){df$Flight.time.in.minutes[indexOfNA] <- 0}
+    
+    indexOfNAList <- which(is.na(df$Flight.time.in.minutes) & df$Flight.cancelled=="No")
+    df$Flight.time.in.minutes[indexOfNAList[1]] <- 90
+    df$Flight.time.in.minutes[indexOfNAList[2]] <- 100
+    df$Flight.time.in.minutes[indexOfNAList[3]] <- 135
+    
+    
     remove(indexOfNA)
     remove(averageFlightTime)
     indexOfNAList <- which(is.na(df$Flight.time.in.minutes))
@@ -135,8 +153,12 @@ View(fall)
     
     remove(columnNames)
     remove(fall)
+    remove(df2)
+    remove(indexOfNAList)
+    saveRDS(df,file="CleanedData.Rda")
+    saveRDS(df,file="PartnerName.Rda")
+    saveRDS(df,file="StateName.Rda")
     
-    save(df,file="CleanedData.Rda")
     
      
 ####### - Laxman Kumar - ########
