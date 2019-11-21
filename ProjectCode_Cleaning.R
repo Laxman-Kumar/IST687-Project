@@ -155,7 +155,10 @@ View(fall)
     remove(fall)
     remove(df2)
     remove(indexOfNAList)
-    save(df,file="CleanedData.Rda")
+    saveRDS(df,file="CleanedData.Rda")
+    saveRDS(df,file="PartnerName.Rda")
+    saveRDS(df,file="StateName.Rda")
+    
     
      
 ####### - Laxman Kumar - ########

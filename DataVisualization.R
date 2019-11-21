@@ -1,5 +1,5 @@
 library(ggplot2)
-install.packages("ggiraph")
+install.packages("ggiraph",dependencies = TRUE)
 library(ggiraph)
 install.packages("plotly")
 library(plotly)
@@ -56,3 +56,8 @@ plotByGender <- function(X1,xlabel,ylabel,title){
 ggplotly(plotByGender("Class","Traveller Class","Count","Gender count by Traveller Class"))
 ggplotly(plotByGender("TypeOfTravel","Traveller Type","Class","Gender count by Traveller Type"))
 ggplotly(plotByGender("AirlineStatus","Airline Status","Count","Gender count by Airline Status"))
+
+
+ggplot(df,aes(x=Class,y=LikelihoodRecommendScore))+geom_col(stat="Identity",aes(fill=Class),position="dodge")+theme_bw()+scale_fill_brewer(palette="Spectral")
+
+
