@@ -159,8 +159,9 @@ View(fall)
     saveRDS(partnerCodeToName,file="PartnerName.Rda")
     saveRDS(StateMap,file="StateName.Rda")
     
-    
-     
+    testdf <- readRDS(file = "CleanedData.Rda")
+    write.csv(df, file = "cleandata.csv")
+         
 ####### - Laxman Kumar - ########
 
 library(sqldf)
