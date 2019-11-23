@@ -143,6 +143,9 @@ View(fall)
     df2 <- df
     colnames(df) <- columnNames
     
+    df$AgeGroup <- cut(df$Age, breaks = c(0,18,36,54, Inf), labels = c('0-18','18-36','36-54','>54'), right = FALSE)
+    
+    
     remove(i)
     
     remove(indexArrivalDelay)
