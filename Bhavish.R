@@ -1,70 +1,107 @@
 ###
-test <- c(1,2,3)
+
+library(tidyverse)
+
 lm_df <- readRDS(file = "CleanedData.Rda")
 View(lm_df)
 lm_df$total_delay <- lm_df$ArrivalDelayInMin + lm_df$DepartureDelayInMin
 
-length(which(is.na(lm_df$total_delay)))
+### Checking NPS score for each partner
 
-unique(lm_df$PartnerCode)
+lm_df$recommender_type <- cut(lm_df$LikelihoodRecommendScore, breaks = c(0,7,9, Inf), labels = c('Detractors','Passive','Promoters'), right = FALSE)   ## Creating Recommender Type categorical variable
 
-## 1.  CREATING DF for AA Partner Code
-
-lm_df_aa <- lm_df[lm_df$PartnerCode == 'AA',]
-
-##View(lm_df_aa)
-##str(lm_df_aa)
-
-linearmodel_aa <- lm(LikelihoodRecommendScore ~ AirlineStatus+Age+Gender+PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
-                       FoodExpenses + ShoppingAmount + Class + ScheduleDepHour + total_delay + FlightDuration + Distance + DestinationState + OriginState,
-                     data = lm_df_aa)
-summary(linearmodel_aa)
+partner_detractors <- lm_df[lm_df$recommender_type == 'Detractors',] %>%
+                      group_by(PartnerCode) %>% 
+                      count(recommender_type)
+colnames(partner_detractors) <- c('PartnerCode','recommender_type','number_detractors')        ## Getting number of detractors at partner level
 
 
-## 2. CREATING DF for EV Partner Code
+partner_passive <- lm_df[lm_df$recommender_type == 'Passive',] %>%
+  group_by(PartnerCode) %>% 
+  count(recommender_type)
+colnames(partner_passive) <- c('PartnerCode','recommender_type','number_passive')       ## Getting number of passive at partner level
 
-lm_df_ev <- lm_df[lm_df$PartnerCode == 'EV',]
 
-##View(lm_df_aa)
-##str(lm_df_aa)
 
-linearmodel_ev <- lm(LikelihoodRecommendScore ~ AirlineStatus+Age+Gender+PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
-                       FoodExpenses + ShoppingAmount + Class + ScheduleDepHour + total_delay + FlightDuration + Distance + DestinationState + OriginState,
-                     data = lm_df_ev)
-summary(linearmodel_ev)
+partner_promoters <- lm_df[lm_df$recommender_type == 'Promoters',] %>%
+  group_by(PartnerCode) %>% 
+  count(recommender_type)
+colnames(partner_promoters) <- c('PartnerCode','recommender_type','number_promoters')   ## Getting number of promoters at partner level
 
-## 3. CREATING DF for WN Partner Code
 
-lm_df_wn <- lm_df[lm_df$PartnerCode == 'WN',]
+partner_np <- merge(partner_detractors,partner_passive, by = 'PartnerCode')
+partner_nps <- merge(partner_np,partner_promoters, by = 'PartnerCode')           ## Obtaining number of promoters, detractors and passive at partner level
 
-##View(lm_df_aa)
-##str(lm_df_aa)
+View(partner_nps)
+remove(partner_np)
+ 
+partner_nps$total <- partner_nps$number_detractors+partner_nps$number_passive+partner_nps$number_promoters
+partner_nps$nps <- ((partner_nps$number_promoters - partner_nps$number_detractors)/partner_nps$total)*100   ## Obtaining NPS score for each partner
 
-linearmodel_wn <- lm(LikelihoodRecommendScore ~ AirlineStatus+Age+Gender+PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
-                       FoodExpenses + ShoppingAmount + Class + ScheduleDepHour + total_delay + FlightDuration + Distance + DestinationState + OriginState,
-                     data = lm_df_wn)
-summary(linearmodel_wn)
 
-## 4. CREATING DF for MQ Partner Code
+library(ggplot2)
+partner_nps_plot <- ggplot(data = partner_nps, aes(x = partner_nps$PartnerCode, y = partner_nps$nps))    ## Plotting NPS score for each partner
+partner_nps_plot <- partner_nps_plot + geom_col()
+partner_nps_plot
 
-lm_df_mq <- lm_df[lm_df$PartnerCode == 'MQ',]
+## CREATING DF by removing partner HA that has very less observations and other partners with high NPS scores
+    ## HA has >50%, AS, OO & DL have around 19%. Hence these 4 partners are removed from our linear model
 
-##View(lm_df_aa)
-##str(lm_df_aa)
+lm_df_partner_rem <- lm_df[(lm_df$PartnerCode != 'HA') & (lm_df$PartnerCode != 'AS') & (lm_df$PartnerCode !='OO') & (lm_df$PartnerCode !='DL'),]
+unique(lm_df$FlightCancelled)
 
-linearmodel_mq <- lm(LikelihoodRecommendScore ~ AirlineStatus+Age+Gender+PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
-                       FoodExpenses + ShoppingAmount + Class + ScheduleDepHour + total_delay + FlightDuration + Distance + DestinationState + OriginState,
-                     data = lm_df_mq)
-summary(linearmodel_mq)
+##Linear Model for non cancelled flights  ADJ R square = 49.33 %
 
-## 5. CREATING DF for MQ Partner Code
+linearmodel_non_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
+                       FoodExpenses + FLightsPerYear +ShoppingAmount + Class + ScheduleDepHour+ total_delay + PartnerCode + FlightDuration + Distance + DestinationState + OriginState,
+                     data = lm_df_partner_rem[lm_df_partner_rem$FlightCancelled == 'No',])
+summary(linearmodel_non_cancel)      
 
-lm_df_mq <- lm_df[lm_df$PartnerCode == 'MQ',]
 
-##View(lm_df_aa)
-##str(lm_df_aa)
+## Generate Training and Test Data for the abve built model to measure accuracy.
 
-linearmodel_mq <- lm(LikelihoodRecommendScore ~ AirlineStatus+Age+Gender+PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
-                       FoodExpenses + ShoppingAmount + Class + ScheduleDepHour + total_delay + FlightDuration + Distance + DestinationState + OriginState,
-                     data = lm_df_mq)
-summary(linearmodel_mq)
+randindex <- sample(1:dim(lm_df_partner_rem))
+cut_point2_3 <- floor(3*dim(lm_df_partner_rem)[1]/4)
+train_non_cancel <- lm_df_partner_rem[randindex[1:cut_point2_3],]    ### 66.6% of data is used as Training Data
+
+test_non_cancel <- lm_df_partner_rem[randindex[(cut_point2_3+1):dim(lm_df_partner_rem)[1]],]
+
+linearmodel_train_non_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel +
+                              FoodExpenses + FLightsPerYear + ShoppingAmount + Class + total_delay + PartnerCode + FlightDuration + DestinationState + OriginState,
+                             data = train_non_cancel)
+summary(linearmodel_train_non_cancel)
+
+test_predictions <-predict(linearmodel_train_non_cancel,test_non_cancel)
+comparison_table <- data.frame(test_non_cancel$LikelihoodRecommendScore, round(test_predictions,0))
+colnames(comparison_table) <- c('actual','predicted')
+length(which(comparison_table$actual==comparison_table$predicted))/length(comparison_table$actual)
+
+
+## Linear model for cancelled flights has ADJ R square = 48.5 %
+
+linearmodel_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel + TotalFreqFlyAccount +
+                       FoodExpenses + FLightsPerYear +ShoppingAmount + Class + ScheduleDepHour+ PartnerCode + FlightDuration + Distance + DestinationState + OriginState,
+                     data = lm_df_partner_rem[lm_df_partner_rem$FlightCancelled == 'Yes',])
+summary(linearmodel_cancel)
+
+## Generate Training and Test Data for the abve built model to measure accuracy.
+
+lm_df_partner_rem_cancel <- lm_df_partner_rem[lm_df_partner_rem$FlightCancelled == 'Yes',]
+View(lm_df_partner_rem)
+
+length(randindex1) <- sample(1:dim(lm_df_partner_rem_cancel))
+cut_point2_3 <- floor(2*dim(lm_df_partner_rem)[1]/3)
+train_non_cancel <- lm_df_partner_rem[randindex[1:cut_point2_3],]    ### 66.6% of data is used as Training Data
+
+test_non_cancel <- lm_df_partner_rem[randindex[(cut_point2_3+1):dim(lm_df_partner_rem)[1]],]
+
+linearmodel_train_non_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel +
+                                     FoodExpenses + FLightsPerYear + ShoppingAmount + Class + total_delay + PartnerCode + FlightDuration + DestinationState + OriginState,
+                                   data = train_non_cancel)
+summary(linearmodel_train_non_cancel)
+
+test_predictions <-predict(linearmodel_train_non_cancel,test_non_cancel)
+comparison_table <- data.frame(test_non_cancel$LikelihoodRecommendScore, round(test_predictions,0))
+colnames(comparison_table) <- c('actual','predicted')
+length(which(comparison_table$actual==comparison_table$predicted))/length(comparison_table$actual)
+
