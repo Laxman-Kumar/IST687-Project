@@ -87,20 +87,20 @@ summary(linearmodel_cancel)
 ## Generate Training and Test Data for the abve built model to measure accuracy.
 
 lm_df_partner_rem_cancel <- lm_df_partner_rem[lm_df_partner_rem$FlightCancelled == 'Yes',]
-View(lm_df_partner_rem)
+View(lm_df_partner_rem_cancel)
 
-length(randindex1) <- sample(1:dim(lm_df_partner_rem_cancel))
-cut_point2_3 <- floor(2*dim(lm_df_partner_rem)[1]/3)
-train_non_cancel <- lm_df_partner_rem[randindex[1:cut_point2_3],]    ### 66.6% of data is used as Training Data
+randindex1 <- sample(1:dim(lm_df_partner_rem_cancel))
+cut_point2_3 <- floor(2*dim(lm_df_partner_rem_cancel)[1]/3)
+train_cancel <- lm_df_partner_rem[randindex1[1:cut_point2_3],]    ### 66.6% of data is used as Training Data
 
-test_non_cancel <- lm_df_partner_rem[randindex[(cut_point2_3+1):dim(lm_df_partner_rem)[1]],]
+test_cancel <- lm_df_partner_rem[randindex[(cut_point2_3+1):dim(lm_df_partner_rem)[1]],]
 
-linearmodel_train_non_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel +
+linearmodel_train_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel +
                                      FoodExpenses + FLightsPerYear + ShoppingAmount + Class + total_delay + PartnerCode + FlightDuration + DestinationState + OriginState,
-                                   data = train_non_cancel)
-summary(linearmodel_train_non_cancel)
+                                   data = train_cancel)
+summary(linearmodel_train_cancel)
 
-test_predictions <-predict(linearmodel_train_non_cancel,test_non_cancel)
+test_predictions <-predict(linearmodel_train_cancel,test_cancel)
 comparison_table <- data.frame(test_non_cancel$LikelihoodRecommendScore, round(test_predictions,0))
 colnames(comparison_table) <- c('actual','predicted')
 length(which(comparison_table$actual==comparison_table$predicted))/length(comparison_table$actual)
