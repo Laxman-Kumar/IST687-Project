@@ -40,8 +40,11 @@ partner_nps$nps <- ((partner_nps$number_promoters - partner_nps$number_detractor
 
 
 library(ggplot2)
-partner_nps_plot <- ggplot(data = partner_nps, aes(x = reorder(partner_nps$PartnerCode,partner_nps$nps), y = partner_nps$nps, fill = partner_nps$nps, xlab("Partners"), ylab("NPS")))    ## Plotting NPS score for each partner
-partner_nps_plot <- partner_nps_plot + geom_col()
+plotTheme <- theme_classic()+theme(axis.title.x = element_text(size = 12),
+                                   axis.title.y = element_text(size = 10),plot.title = element_text(size = 15, hjust = 0.5),
+                                   panel.grid.major = element_line(color="#e6e6e6",linetype=1))
+partner_nps_plot <- ggplot(data = partner_nps, aes(x = reorder(partner_nps$PartnerCode,partner_nps$nps), y = partner_nps$nps, fill = partner_nps$nps))    ## Plotting NPS score for each partner
+partner_nps_plot <- partner_nps_plot + geom_col(aes(fill = PartnerCode)) + plotTheme+theme(legend.position = "none") + xlab("Partners")+ ylab("NPS")
 partner_nps_plot
 
 ## CREATING DF by removing partner HA that has very less observations and other partners with high NPS scores
