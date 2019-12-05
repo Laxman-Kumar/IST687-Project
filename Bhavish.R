@@ -61,6 +61,34 @@ linearmodel_non_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Ge
 summary(linearmodel_non_cancel)      
 
 
+## Generate Training and Test Data for the abve built model to measure accuracy.
+
+#install.packages('splitstackshape')
+library(splitstackshape)
+randindex1 <- sample(1:dim(lm_df_partner_rem))
+cut_point2_3 <- floor(2*dim(lm_df_partner_rem)[1]/3)
+train_non_cancel_rem <- stratified(lm_df_partner_rem, c("OriginState","DestinationState"), 0.66)      ### 66.6% of data is used as Training Data
+
+
+test_non_cancel_rem <- lm_df_partner_rem[randindex[(cut_point2_3+1):dim(lm_df_partner_rem)[1]],]
+
+linearmodel_train_non_cancel_rem <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel +
+                                FoodExpenses + FLightsPerYear + ShoppingAmount + Class + total_delay + PartnerCode + FlightDuration + DestinationState + OriginState,
+                                 data = train_non_cancel_rem[train_non_cancel_rem$FlightCancelled == 'No',])
+summary(linearmodel_train_non_cancel_rem)
+
+test_predictions <-predict(linearmodel_train_non_cancel_rem,test_non_cancel_rem)
+comparison_table <- data.frame(test_non_cancel_rem$LikelihoodRecommendScore,test_non_cancel_rem$recommender_type,round(test_predictions,0))
+colnames(comparison_table) <- c('actual','actual_recommender_type','predicted')
+comparison_table$predicted_recommender_type <- cut(comparison_table$predicted, breaks = c(0,7,9, Inf), labels = c('Detractors','Passive','Promoters'), right = FALSE)
+
+
+length(which(comparison_table$actual==comparison_table$predicted))/length(comparison_table$actual)   ## 22.1% Accuracy based on actual Likelihood to recommend score predicted values.
+
+length(which(comparison_table$actual_recommender_type==comparison_table$predicted_recommender_type))/length(comparison_table$actual)   ## 54% Accuracy based on classifying predicted likelihood to recommend score
+
+
+
 ## Linear model for cancelled flights after excluding high performing partners and partners with low number of observations. ADJ R square = 38.07 %
 
 linearmodel_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel + 
@@ -68,7 +96,29 @@ linearmodel_cancel <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender
                      data = lm_df_partner_rem[lm_df_partner_rem$FlightCancelled == 'Yes',])
 summary(linearmodel_cancel)
 
+lm_df_partner_rem_cancel <- lm_df_partner_rem[lm_df_partner_rem$FlightCancelled == 'Yes',]
 
+randindex2 <- sample(1:dim(lm_df_partner_rem_cancel))
+cut_point2_3 <- floor(2*dim(lm_df_partner_rem_cancel)[1]/3)
+train_cancel_rem <- stratified(lm_df_partner_rem_cancel, c("OriginState","DestinationState"), 0.66)      ### 66.6% of data is used as Training Data
+
+
+test_cancel_rem <- lm_df_partner_rem_cancel[randindex2[(cut_point2_3+1):dim(lm_df_partner_rem_cancel)[1]],]
+
+linearmodel_train_cancel_rem <- lm(LikelihoodRecommendScore ~ AirlineStatus + Age + Gender + PriceSensitivity + Loyalty + TypeOfTravel +
+                                         FoodExpenses + FLightsPerYear + ShoppingAmount + Class + PartnerCode + FlightDuration + DestinationState + OriginState,
+                                       data = lm_df_partner_rem_cancel)
+summary(linearmodel_train_cancel_rem)
+
+test_predictions2 <-predict(linearmodel_train_cancel_rem,test_cancel_rem)
+comparison_table2 <- data.frame(test_cancel_rem$LikelihoodRecommendScore,test_cancel_rem$recommender_type,round(test_predictions2,0))
+colnames(comparison_table2) <- c('actual','actual_recommender_type','predicted')
+comparison_table2$predicted_recommender_type <- cut(comparison_table2$predicted, breaks = c(0,7,9, Inf), labels = c('Detractors','Passive','Promoters'), right = FALSE)
+
+
+length(which(comparison_table2$actual==comparison_table2$predicted))/length(comparison_table2$actual)   ## 22.1% Accuracy based on actual Likelihood to recommend score predicted values.
+
+length(which(comparison_table2$actual_recommender_type==comparison_table2$predicted_recommender_type))/length(comparison_table2$actual)   ## 54% Accuracy based on classifying predicted likelihood to recommend score
 
 ## Including High performing partners and building a model for the df
 

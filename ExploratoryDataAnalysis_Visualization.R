@@ -59,7 +59,7 @@ subplot(p1,p2,p3,p4,nrows=2,margin = 0.05)
 ### Boxplot for Age Groups
 
 ageGroupPlot <-ggplot(df,aes(AgeGroup,LikelihoodRecommendScore))+
-  xlab("Traveller Type")+ ylab("Likelihood to recommend Score")+
+  xlab("Age Groups")+ ylab("Likelihood to recommend Score")+
   ggtitle("Likelihood Recommendation Score by age group")+plotTheme
 
 p1 <- ageGroupPlot+geom_boxplot(aes(fill=AgeGroup))            ## BOXPLOT for Age Groups
@@ -94,6 +94,8 @@ ggplotly(genderPlot,tooltip=c("text","x","y"),dynamicTicks = TRUE)
 #ggplotly(genderPlot,tooltip=c("text","x","y"),dynamicTicks = TRUE)
 
 
+## NUMBER OF CUSTOMER SURVEYS BY CLass, Airline Status, Gender, Agegroups
+
 dfClass <- data.frame(table(df$Class,df$Gender))
 colnames(dfClass) <- c("Class","Gender","Count")
 #dfClass
@@ -125,3 +127,36 @@ p4 <- ggplot(dfType,aes(x=dfType,y=sort(Count),group=Gender))+
 
 ggplotly(genderPlot)
 subplot(p1,p2,p3,p4,nrows=2,margin=0.05)
+
+### NO of PROMOTERS, DETRACTORS and PASSIVE for each partner across cancelled and non cancelled flights
+
+df$recommender_type <- cut(df$LikelihoodRecommendScore, breaks = c(0,7,9, Inf), labels = c('Detractors','Passive','Promoters'), right = FALSE)   ## Creating Recommender Type categorical variable
+
+partner_cancellation_nps <- data.frame(table(df$FlightCancelled,df$recommender_type))    ## Number of Detractors, Promoters & Passives for each partner & cancellation status
+
+colnames(partner_cancellation_nps) <- c('FlightCancellationStatus','RecommenderType','Number')
+
+partner_flight_status_no <- ggplot(partner_cancellation_nps[partner_cancellation_nps$FlightCancellationStatus == 'No',],aes(x=FlightCancellationStatus,y=Number,group=RecommenderType))+
+  geom_col(aes(fill=RecommenderType))+
+  xlab("Flight Cancellation Status")+ ylab("Number")+plotTheme
+
+partner_flight_status_yes <- ggplot(partner_cancellation_nps[partner_cancellation_nps$FlightCancellationStatus == 'Yes',],aes(x=FlightCancellationStatus,y=Number,group=RecommenderType))+
+  geom_col(aes(fill=RecommenderType))+
+  xlab("Flight Cancellation Status")+ ylab("Number")+plotTheme
+
+
+ggplotly(partner_flight_status,tooltip=c("text","x","y"))
+
+
+### DAY OF WEEK PLOT
+install.packages("lubridate")
+library(lubridate)
+install.packages("ggthemr")
+library(ggthemr)
+
+df$day <- weekdays(as.Date(mdy(df$FlightDate)))
+days <- data.frame(table(df$PartnerCode,df$day))
+p1 <- ggplot(days,aes(x=Var2,y=Freq,group=Var2,fill=Var2))+
+  geom_col(show.legend=FALSE,position = "dodge")+
+  plotTheme+scale_fill_brewer(type="qual")
+ggplotly(p1)
