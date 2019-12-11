@@ -28,7 +28,7 @@ Associative_DfX <- as(Associative_Df,"transactions")
 #inspect(Associative_DfX)
 
 ruleset <- apriori(Associative_DfX,     ### RULES FOR DETRACTORS
-                   parameter=list(support=0.005,confidence=0.5), # Setting support as 10% and confidence as 50%       
+                   parameter=list(support=0.005,confidence=0.5), # Setting support as 0.5% and confidence as 50%       
                    appearance = list(default="lhs", rhs=("recommender_type=Detractors")))
 
 inspect(ruleset)
@@ -36,7 +36,7 @@ inspectDT(ruleset)
 
 
 ruleset_p <- apriori(Associative_DfX,     ### RULES FOR PROMOTERS
-                   parameter=list(support=0.005,confidence=0.5), # Setting support as 10% and confidence as 50%       
+                   parameter=list(support=0.005,confidence=0.5), # Setting support as 0.5% and confidence as 50%       
                    appearance = list(default="lhs", rhs=("recommender_type=Promoters")))
 
 inspect(ruleset_p)

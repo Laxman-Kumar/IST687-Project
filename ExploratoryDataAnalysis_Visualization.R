@@ -128,7 +128,7 @@ p4 <- ggplot(dfType,aes(x=dfType,y=sort(Count),group=Gender))+
 ggplotly(genderPlot)
 subplot(p1,p2,p3,p4,nrows=2,margin=0.05)
 
-### NO of PROMOTERS, DETRACTORS and PASSIVE for each partner across cancelled and non cancelled flights
+### NO of PROMOTERS, DETRACTORS and PASSIVE for southeast airines, across cancelled and non cancelled flights
 
 df$recommender_type <- cut(df$LikelihoodRecommendScore, breaks = c(0,7,9, Inf), labels = c('Detractors','Passive','Promoters'), right = FALSE)   ## Creating Recommender Type categorical variable
 
