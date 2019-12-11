@@ -16,19 +16,13 @@ remove(dataset)
 View(fall)
 
 ####### - Cleaning Data Starts here  - ######
-####### - BY - Laxman Kumar, Bhavish Kumar and Vidushi Mishra - #######
 
     #Field with NAs are DepartureDelay, ArrivalDelay, FlightTimeinMin
     
     ## All the NAs in Departure Delay column are due to flight cancellation.
     ## There are 19 Nas in Arrival Delay and Flight Time in Minutes even for flights which are not cancelled and those have to be treated.
 
-    columnNames <- c("DestinationCity","OriginCity","AirlineStatus","Age","Gender","PriceSensitivity",
-                     "YearOfFirstFlight","FLightsPerYear","Loyalty","TypeOfTravel","TotalFreqFlyAccount",
-                     "ShoppingAmount","FoodExpenses","Class","FlightDate","PartnerCode",
-                     "ScheduleDepHour","DepartureDelayInMin","ArrivalDelayInMin",
-                     "FlightCancelled","FlightDuration","Distance","LikelihoodRecommendScore",
-                     "OriginLong","OriginLat","DestLong","DestLat","DestinationState","OriginState")     ## Creating new column names to be renamed
+    
   
     #Hash mapping of partner code with the partner names
     partnerCodeToName <- hash(unique(fall$Partner.Code),unique(fall$Partner.Name))     ## Creating a hash map between partner code and partner name
@@ -141,7 +135,20 @@ View(fall)
     df$Departure.Delay.in.Minutes[which(is.na(df$Departure.Delay.in.Minutes) & df$Flight.cancelled=="Yes")] <- NaN
     
     df2 <- df
+    
+    ## Creating new column names to be renamed
+    
+    columnNames <- c("DestinationCity","OriginCity","AirlineStatus","Age","Gender","PriceSensitivity",
+                     "YearOfFirstFlight","FLightsPerYear","Loyalty","TypeOfTravel","TotalFreqFlyAccount",
+                     "ShoppingAmount","FoodExpenses","Class","FlightDate","PartnerCode",
+                     "ScheduleDepHour","DepartureDelayInMin","ArrivalDelayInMin",
+                     "FlightCancelled","FlightDuration","Distance","LikelihoodRecommendScore",
+                     "OriginLong","OriginLat","DestLong","DestLat","DestinationState","OriginState")     
+    
     colnames(df) <- columnNames
+    
+    df$AgeGroup <- cut(df$Age, breaks = c(0,18,36,54, Inf), labels = c('0-18','18-36','36-54','>54'), right = FALSE)
+    
     
     remove(i)
     
@@ -161,6 +168,8 @@ View(fall)
     
     testdf <- readRDS(file = "CleanedData.Rda")
     write.csv(df, file = "cleandata.csv")
+    
+    #### DATA CLEANING ENDS HERE ####
          
 ####### - Laxman Kumar - ########
 
