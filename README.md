@@ -1,4 +1,4 @@
-# IntroductionToDataScienceProject
+# Introduction to Data Science Project
 
 South East Airlines is currently suffering from customer churn, owing to poor customer experience and customer dissatisfaction. The customer satisfaction is identified through a likelihood to recommendation score filled in by the customer in their survey. This likelihood to recommend score is used to tag a customer as a Promoter, Detractor or Passive. The Net Promoter Score (NPS) is then measured as the difference between % of Promoters and % Detractors. Detractors are the customers who are most likely to churn and may cause more customers to churn by spreading negative reviews, whereas Promoters on the other hand may even bring in more customers by spreading positive reviews.
 
